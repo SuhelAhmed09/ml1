@@ -3,42 +3,52 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import confusion_matrix , accuracy_score
-from sklearn import tree
-import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, accuracy_score
+from matplotlib.colors import ListedColormap
+import matplotlib.pyplot as mtp
 
-data_set= pd.read_csv('User_Data.csv')
-
-x= data_set.iloc[:, [2,3]].values
-y= data_set.iloc[:, 4].values
+data_set = pd.read_csv('User_Data.csv')
+x = data_set.iloc[:, [2, 3]].values
+y = data_set.iloc[:, 4].values
 print(x)
 print(y)
 
-x_train, x_test, y_train, y_test= train_test_split(x, y, test_size= 0.25, random_state=0)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=0)
 
-st_x= StandardScaler()
-x_train= st_x.fit_transform(x_train)
-x_test= st_x.transform(x_test)
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train)
+x_test = sc.transform(x_test)
 
-classifier= DecisionTreeClassifier(criterion='entropy', random_state=0)
+classifier = DecisionTreeClassifier(criterion='entropy', random_state=0)
 classifier.fit(x_train, y_train)
 
-y_pred= classifier.predict(x_test)
+y_pred = classifier.predict(x_test)
 print(y_pred)
 
-cm= confusion_matrix(y_test, y_pred)
+cm = confusion_matrix(y_test, y_pred)
 print(cm)
 
-accuracy=accuracy_score(y_test,y_pred)
+accuracy = accuracy_score(y_test, y_pred)
 print(accuracy)
 
-clf = DecisionTreeClassifier()
-clf = clf.fit(x_train,y_train)
-y_pred = clf.predict(x_test)
-tree.plot_tree(clf)
+def visualize_results(x_set, y_set,title,classifier):
+    x1, x2 = nm.meshgrid(
+        nm.arange(start=x_set[:, 0].min() - 1, stop=x_set[:, 0].max() + 1, step=0.01),
+        nm.arange(start=x_set[:, 1].min() - 1, stop=x_set[:, 1].max() + 1, step=0.01) )
 
-clf = tree.DecisionTreeClassifier(criterion = 'entropy')
-clf = clf.fit(x, y)
-tree.plot_tree(clf)
-plt.figure(figsize=(45,60))
-tree.plot_tree(clf,filled=True)
+    mtp.contourf(x1, x2, classifier.predict(nm.array([x1.ravel(), x2.ravel()]).T).reshape(x1.shape),
+        alpha=0.75, cmap=ListedColormap(('purple', 'green')))
+
+    mtp.xlim(x1.min(), x1.max())
+    mtp.ylim(x2.min(), x2.max())
+    
+    for i, j in enumerate(nm.unique(y_set)):
+        mtp.scatter(x_set[y_set == j, 0], x_set[y_set == j, 1], c=ListedColormap(('purple', 'green'))(i), label=j)
+    mtp.title(title)
+    mtp.xlabel('Age')
+    mtp.ylabel('Estimated Salary')
+    mtp.legend()
+    mtp.show()
+
+visualize_results(x_train, y_train,'Decision Tree Algorithm (Training set)',classifier)
+visualize_results(x_test, y_test,'Decision Tree Algorithm (Test set)',classifier)
